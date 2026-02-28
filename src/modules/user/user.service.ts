@@ -15,4 +15,8 @@ export class UserService {
     async updateById(id: string, data: Partial<Pick<UserDoc, 'email' | 'role'>>) {
         return await this.userDb.updateById(id, data);
     }
+
+    async deleteById(id: string) {
+        return await this.userDb.deleteById(id);
+    }
 }

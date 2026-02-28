@@ -12,6 +12,7 @@ const controller = new UserController(service);
 router.get('/', controller.list);
 router.get('/:id', controller.getById);
 router.patch('/:id', controller.update);
+router.delete('/:id', controller.delete);
 
 export const userRoutes = router;
 

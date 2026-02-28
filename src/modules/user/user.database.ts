@@ -24,4 +24,9 @@ export class UserDatabase {
 
         return result.matchedCount === 1;
     }
+
+    async deleteById(id: string): Promise<boolean> {
+        const result = await this.col().deleteOne({ _id: new ObjectId(id) });
+        return result.deletedCount === 1;
+    }
 }

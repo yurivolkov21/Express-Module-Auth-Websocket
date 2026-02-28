@@ -45,4 +45,22 @@ export class UserController {
 
         res.json({ message: "User updated successfully" });
     }
+
+    delete = async (req: Request, res: Response) => {
+        const { id } = req.params;
+
+        if (!id || typeof id !== 'string') {
+            res.status(400).json({ message: "Invalid user id" });
+            return;
+        }
+
+        const found = await this.userService.deleteById(id);
+
+        if (!found) {
+            res.status(404).json({ message: "User not found" });
+            return;
+        }
+
+        res.json({ message: "User deleted successfully" });
+    }
 }
