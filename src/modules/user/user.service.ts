@@ -6,4 +6,8 @@ export class UserService {
     async list() {
         return await this.userDb.list();
     }
+
+    async findById(id: string) {
+        return await this.userDb.findById(id);
+    }
 }

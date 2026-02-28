@@ -8,4 +8,22 @@ export class UserController {
         const users = await this.userService.list();
         res.json(users);
     }
+
+    getById = async (req: Request, res: Response) => {
+        const { id } = req.params;
+
+        if (!id || typeof id !== 'string') {
+            res.status(400).json({ message: "Invalid user id" });
+            return;
+        }
+
+        const user = await this.userService.findById(id);
+
+        if (!user) {
+            res.status(404).json({ message: "User not found" });
+            return;
+        }
+
+        res.json(user);
+    }
 }

@@ -10,6 +10,7 @@ const service = new UserService(db);
 const controller = new UserController(service);
 
 router.get('/', controller.list);
+router.get('/:id', controller.getById);
 
 export const userRoutes = router;
 
