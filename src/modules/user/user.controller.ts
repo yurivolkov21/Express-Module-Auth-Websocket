@@ -26,4 +26,23 @@ export class UserController {
 
         res.json(user);
     }
+
+    update = async (req: Request, res: Response) => {
+        const { id } = req.params;
+
+        if (!id || typeof id !== 'string') {
+            res.status(400).json({ message: "Invalid user id" });
+            return;
+        }
+
+        const { email, role } = req.body;
+        const found = await this.userService.updateById(id, { email, role });
+
+        if (!found) {
+            res.status(404).json({ message: "User not found" });
+            return;
+        }
+
+        res.json({ message: "User updated successfully" });
+    }
 }

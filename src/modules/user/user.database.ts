@@ -15,4 +15,13 @@ export class UserDatabase {
     async findById(id: string): Promise<UserDoc & { _id: ObjectId } | null> {
         return await this.col().findOne({ _id: new ObjectId(id) });
     }
+
+    async updateById(id: string, data: Partial<Pick<UserDoc, 'email' | 'role'>>): Promise<boolean> {
+        const result = await this.col().updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { ...data, updatedAt: new Date() } }
+        )
+
+        return result.matchedCount === 1;
+    }
 }

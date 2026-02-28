@@ -1,4 +1,5 @@
 import type { UserDatabase } from "./user.database.js";
+import type { UserDoc } from "./user.model.js";
 
 export class UserService {
     constructor(private readonly userDb: UserDatabase) {}
@@ -9,5 +10,9 @@ export class UserService {
 
     async findById(id: string) {
         return await this.userDb.findById(id);
+    }
+
+    async updateById(id: string, data: Partial<Pick<UserDoc, 'email' | 'role'>>) {
+        return await this.userDb.updateById(id, data);
     }
 }

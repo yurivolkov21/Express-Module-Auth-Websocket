@@ -11,6 +11,7 @@ const controller = new UserController(service);
 
 router.get('/', controller.list);
 router.get('/:id', controller.getById);
+router.patch('/:id', controller.update);
 
 export const userRoutes = router;
 
