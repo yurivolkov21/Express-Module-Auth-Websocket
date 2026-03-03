@@ -6,7 +6,7 @@ export class UserController {
 
     list = async (_req: Request, res: Response) => {
         const users = await this.userService.list();
-        res.json(users);
+        res.json({ data: users });
     }
 
     getById = async (req: Request, res: Response) => {
@@ -24,7 +24,7 @@ export class UserController {
             return;
         }
 
-        res.json(user);
+        res.json({ data: user });
     }
 
     update = async (req: Request, res: Response) => {
