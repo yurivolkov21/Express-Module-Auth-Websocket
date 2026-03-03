@@ -2,31 +2,27 @@ import { ObjectId } from "mongodb";
 import { getDb } from "../../database/mongo.js";
 import type { UserDoc } from "./user.model.js";
 
+export type UserEntity = UserDoc & { _id: ObjectId };
 
 export class UserDatabase {
     private col() {
         return getDb().collection<UserDoc>("users");
     }
 
-    async list(): Promise<Array<UserDoc & { _id: ObjectId }>> {
+    async list(): Promise<Array<UserEntity>> {
         return await this.col().find({}).limit(50).toArray();
     }
 
-    async findById(id: string): Promise<UserDoc & { _id: ObjectId } | null> {
-        return await this.col().findOne({ _id: new ObjectId(id) });
+    async findByEmail(email: string): Promise<UserEntity | null> {
+        return this.col().findOne({ email}) as Promise<UserEntity | null>;
     }
 
-    async updateById(id: string, data: Partial<Pick<UserDoc, 'email' | 'role'>>): Promise<boolean> {
-        const result = await this.col().updateOne(
-            { _id: new ObjectId(id) },
-            { $set: { ...data, updatedAt: new Date() } }
-        )
-
-        return result.matchedCount === 1;
+    async findById(id: string): Promise<UserEntity | null> {
+        return this.col().findOne({ _id: new ObjectId(id) }) as Promise<UserEntity | null>;
     }
 
-    async deleteById(id: string): Promise<boolean> {
-        const result = await this.col().deleteOne({ _id: new ObjectId(id) });
-        return result.deletedCount === 1;
+    async create(doc: UserDoc): Promise<UserEntity> {
+        const result = await this.col().insertOne(doc);
+        return { ...doc, _id: result.insertedId };
     }
 }

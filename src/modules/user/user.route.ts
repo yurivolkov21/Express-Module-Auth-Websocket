@@ -10,9 +10,7 @@ const service = new UserService(db);
 const controller = new UserController(service);
 
 router.get('/', controller.list);
-router.get('/:id', controller.getById);
-router.patch('/:id', controller.update);
-router.delete('/:id', controller.delete);
+router.post('/register', controller.register);
 
 export const userRoutes = router;
 

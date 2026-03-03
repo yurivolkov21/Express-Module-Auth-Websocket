@@ -1,5 +1,8 @@
-import type { UserDatabase } from "./user.database.js";
-import type { UserDoc } from "./user.model.js";
+import { hash } from "node:crypto";
+import { ApiError } from "../../utils/http.js";
+import type { UserDatabase, UserEntity } from "./user.database.js";
+import type { UserDoc, UserRole } from "./user.model.js";
+import { hashPassword } from "../../utils/crypto.js";
 
 export class UserService {
     constructor(private readonly userDb: UserDatabase) {}
@@ -8,15 +11,29 @@ export class UserService {
         return await this.userDb.list();
     }
 
-    async findById(id: string) {
-        return await this.userDb.findById(id);
-    }
+    async register(input: { email: string; password: string; role?: UserRole}): Promise<UserEntity> {
+        const email = input.email.trim().toLocaleLowerCase();
 
-    async updateById(id: string, data: Partial<Pick<UserDoc, 'email' | 'role'>>) {
-        return await this.userDb.updateById(id, data);
-    }
+        if (!email.includes('@')) throw new ApiError(400, { message: "Invalid email address" });
 
-    async deleteById(id: string) {
-        return await this.userDb.deleteById(id);
+        const password = input.password;
+
+        if (password.length < 6) throw new ApiError(400, { message: "Password must be at least 6 characters long" });
+
+        const existed = await this.userDb.findByEmail(email);
+
+        if (existed) throw new ApiError(400, { message: "Email already exists" });
+
+        const now = new Date();
+        const hashedPassword = await hashPassword(password);
+        const role: UserRole = input.role || "customer";
+
+        return this.userDb.create({
+            email,
+            passwordHash: hashedPassword,
+            role,
+            createdAt: now,
+            updatedAt: now
+        });
     }
 }
