@@ -34,4 +34,4 @@ export const env = {
     refreshCookieName: process.env.REFRESH_COOKIE_NAME || 'rt',
     mongoUri: required('MONGODB_URI'),
     mongoDB: required('MONGO_DB'),
-};
+} as const;
