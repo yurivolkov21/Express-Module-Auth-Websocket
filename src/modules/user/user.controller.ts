@@ -3,7 +3,7 @@ import type { UserService } from "./user.service.js";
 import { ok } from "../../utils/http.js";
 
 export class UserController {
-    constructor(private readonly userService: UserService) {}
+    constructor(private readonly userService: UserService) { }
 
     list = async (_req: Request, res: Response) => {
         const users = await this.userService.list();
@@ -12,7 +12,6 @@ export class UserController {
 
     register = async (_req: Request, res: Response) => {
         const { email, password, role } = _req.body;
-
         const user = await this.userService.register({ email, password, role });
 
         res.status(201).json(
@@ -28,7 +27,6 @@ export class UserController {
 
     bulkRegister = async (req: Request, res: Response) => {
         const inputs = req.body;
-
         const users = await this.userService.bulkRegister(inputs);
 
         res.status(201).json(
@@ -46,7 +44,6 @@ export class UserController {
     update = async (req: Request<{ id: string }>, res: Response) => {
         const { id } = req.params;
         const { email, role } = req.body;
-
         const user = await this.userService.updateUser(id, { email, role });
 
         res.json(
@@ -58,4 +55,11 @@ export class UserController {
             })
         );
     }
+
+    remove = async (req: Request<{ id: string }>, res: Response) => {
+        const { id } = req.params;
+
+        await this.userService.deleteUser(id);
+        res.status(204).send();
+    };
 }

@@ -5,13 +5,13 @@ import type { UserDoc, UserRole } from "./user.model.js";
 import { hashPassword } from "../../utils/crypto.js";
 
 export class UserService {
-    constructor(private readonly userDb: UserDatabase) {}
+    constructor(private readonly userDb: UserDatabase) { }
 
     async list() {
         return await this.userDb.list();
     }
 
-    async register(input: { email: string; password: string; role?: UserRole}): Promise<UserEntity> {
+    async register(input: { email: string; password: string; role?: UserRole }): Promise<UserEntity> {
         const email = input.email.trim().toLocaleLowerCase();
         if (!email.includes('@')) throw new ApiError(400, { message: `Invalid email address: ${email}` });
 
@@ -34,7 +34,7 @@ export class UserService {
         });
     }
 
-    async bulkRegister(inputs: Array<{ email: string; password: string; role?: UserRole}>): Promise<UserEntity[]> {
+    async bulkRegister(inputs: Array<{ email: string; password: string; role?: UserRole }>): Promise<UserEntity[]> {
         const now = new Date();
         const docs: UserDoc[] = [];
 
@@ -84,5 +84,13 @@ export class UserService {
         if (!updated) throw new ApiError(500, { message: "Failed to update user" });
 
         return updated;
+    }
+
+    async deleteUser(id: string): Promise<void> {
+        const existed = await this.userDb.findById(id);
+        if (!existed) throw new ApiError(404, { message: "User not found" });
+
+        const deleted = await this.userDb.deleteById(id);
+        if (!deleted) throw new ApiError(500, { message: "Delete failed" });
     }
 }

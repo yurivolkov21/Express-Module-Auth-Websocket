@@ -15,5 +15,7 @@ router.post('/bulk-register', controller.bulkRegister);
 
 router.patch('/:id', controller.update);
 
+router.delete('/:id', controller.remove);
+
 export const userRoutes = router;
 

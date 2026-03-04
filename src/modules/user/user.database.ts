@@ -14,7 +14,7 @@ export class UserDatabase {
     }
 
     async findByEmail(email: string): Promise<UserEntity | null> {
-        return this.col().findOne({ email}) as Promise<UserEntity | null>;
+        return this.col().findOne({ email }) as Promise<UserEntity | null>;
     }
 
     async findById(id: string): Promise<UserEntity | null> {
@@ -41,5 +41,10 @@ export class UserDatabase {
             { returnDocument: "after" }
         );
         return result as UserEntity | null;
+    }
+
+    async deleteById(id: string): Promise<boolean> {
+        const result = await this.col().deleteOne({ _id: new ObjectId(id) });
+        return result.deletedCount === 1;
     }
 }
