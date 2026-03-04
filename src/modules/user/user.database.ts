@@ -25,4 +25,9 @@ export class UserDatabase {
         const result = await this.col().insertOne(doc);
         return { ...doc, _id: result.insertedId };
     }
+
+    async createMany(docs: UserDoc[]): Promise<UserEntity[]> {
+        const result = await this.col().insertMany(docs);
+        return docs.map((doc, i) => ({ ...doc, _id: result.insertedIds[i]! }));
+    }
 }

@@ -13,15 +13,12 @@ export class UserService {
 
     async register(input: { email: string; password: string; role?: UserRole}): Promise<UserEntity> {
         const email = input.email.trim().toLocaleLowerCase();
-
-        if (!email.includes('@')) throw new ApiError(400, { message: "Invalid email address" });
+        if (!email.includes('@')) throw new ApiError(400, { message: `Invalid email address: ${email}` });
 
         const password = input.password;
-
-        if (password.length < 6) throw new ApiError(400, { message: "Password must be at least 6 characters long" });
+        if (input.password.length < 6) throw new ApiError(400, { message: `Password too short for: ${email}` });
 
         const existed = await this.userDb.findByEmail(email);
-
         if (existed) throw new ApiError(400, { message: "Email already exists" });
 
         const now = new Date();
@@ -35,5 +32,32 @@ export class UserService {
             createdAt: now,
             updatedAt: now
         });
+    }
+
+    async bulkRegister(inputs: Array<{ email: string; password: string; role?: UserRole}>): Promise<UserEntity[]> {
+        const now = new Date();
+        const docs: UserDoc[] = [];
+
+        for (const input of inputs) {
+            const email = input.email.trim().toLocaleLowerCase();
+
+            if (!email.includes('@')) throw new ApiError(400, { message: `Invalid email address: ${email}` });
+            if (input.password.length < 6) throw new ApiError(400, { message: `Password too short for: ${email}` });
+
+            const existed = await this.userDb.findByEmail(email);
+            if (existed) throw new ApiError(400, { message: `Email already exists: ${email}` });
+
+            const passwordHash = await hashPassword(input.password);
+
+            docs.push({
+                email,
+                passwordHash,
+                role: input.role ?? "customer",
+                createdAt: now,
+                updatedAt: now
+            });
+        }
+
+        return this.userDb.createMany(docs);
     }
 }

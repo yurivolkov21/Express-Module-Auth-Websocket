@@ -25,4 +25,21 @@ export class UserController {
             })
         )
     }
+
+    bulkRegister = async (req: Request, res: Response) => {
+        const inputs = req.body;
+
+        const users = await this.userService.bulkRegister(inputs);
+
+        res.status(201).json(
+            ok(
+                users.map((u) => ({
+                    id: u._id.toString(),
+                    email: u.email,
+                    role: u.role,
+                    createdAt: u.createdAt,
+                }))
+            )
+        )
+    }
 }

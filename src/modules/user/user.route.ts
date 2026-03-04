@@ -11,6 +11,7 @@ const controller = new UserController(service);
 
 router.get('/', controller.list);
 router.post('/register', controller.register);
+router.post('/bulk-register', controller.bulkRegister);
 
 export const userRoutes = router;
 
