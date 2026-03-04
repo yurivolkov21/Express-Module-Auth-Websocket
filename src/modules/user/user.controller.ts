@@ -42,4 +42,20 @@ export class UserController {
             )
         )
     }
+
+    update = async (req: Request<{ id: string }>, res: Response) => {
+        const { id } = req.params;
+        const { email, role } = req.body;
+
+        const user = await this.userService.updateUser(id, { email, role });
+
+        res.json(
+            ok({
+                id: user?._id.toString(),
+                email: user?.email,
+                role: user?.role,
+                createdAt: user?.createdAt,
+            })
+        );
+    }
 }

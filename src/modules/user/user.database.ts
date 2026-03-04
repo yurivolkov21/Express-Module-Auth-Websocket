@@ -30,4 +30,16 @@ export class UserDatabase {
         const result = await this.col().insertMany(docs);
         return docs.map((doc, i) => ({ ...doc, _id: result.insertedIds[i]! }));
     }
+
+    async updateById(
+        id: string,
+        update: Partial<Pick<UserDoc, "email" | "role">>
+    ): Promise<UserEntity | null> {
+        const result = await this.col().findOneAndUpdate(
+            { _id: new ObjectId(id) },
+            { $set: { ...update, updatedAt: new Date() } },
+            { returnDocument: "after" }
+        );
+        return result as UserEntity | null;
+    }
 }

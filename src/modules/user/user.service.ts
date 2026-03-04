@@ -60,4 +60,29 @@ export class UserService {
 
         return this.userDb.createMany(docs);
     }
+
+    async updateUser(
+        id: string,
+        input: { email?: string, role?: UserRole }
+    ): Promise<UserEntity> {
+        const existed = await this.userDb.findById(id);
+        if (!existed) throw new ApiError(404, { message: "User not found" });
+
+        const update: Partial<Pick<UserDoc, "email" | "role">> = {};
+
+        if (input.email) {
+            const email = input.email.trim().toLocaleLowerCase();
+            if (!email.includes('@')) throw new ApiError(400, { message: `Invalid email address: ${email}` });
+            update.email = email;
+        }
+
+        if (input.role) {
+            update.role = input.role;
+        }
+
+        const updated = await this.userDb.updateById(id, update);
+        if (!updated) throw new ApiError(500, { message: "Failed to update user" });
+
+        return updated;
+    }
 }
