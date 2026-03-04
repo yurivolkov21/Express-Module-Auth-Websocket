@@ -16,7 +16,9 @@ export class UserService {
         if (!email.includes('@')) throw new ApiError(400, { message: `Invalid email address: ${email}` });
 
         const password = input.password;
-        if (input.password.length < 6) throw new ApiError(400, { message: `Password too short for: ${email}` });
+        if (password.length < 6) throw new ApiError(400, { message: "Password must be at least 6 characters long" });
+        if (!/[A-Z]/.test(password)) throw new ApiError(400, { message: "Password must contain at least 1 uppercase letter" });
+        if (!/[^a-zA-Z0-9]/.test(password)) throw new ApiError(400, { message: "Password must contain at least 1 special character" });
 
         const existed = await this.userDb.findByEmail(email);
         if (existed) throw new ApiError(400, { message: "Email already exists" });
@@ -42,7 +44,9 @@ export class UserService {
             const email = input.email.trim().toLocaleLowerCase();
 
             if (!email.includes('@')) throw new ApiError(400, { message: `Invalid email address: ${email}` });
-            if (input.password.length < 6) throw new ApiError(400, { message: `Password too short for: ${email}` });
+            if (input.password.length < 6) throw new ApiError(400, { message: `Password must be at least 6 characters long` });
+            if (!/[A-Z]/.test(input.password)) throw new ApiError(400, { message: `Password must contain at least 1 uppercase letter` });
+            if (!/[^a-zA-Z0-9]/.test(input.password)) throw new ApiError(400, { message: `Password must contain at least 1 special character` });
 
             const existed = await this.userDb.findByEmail(email);
             if (existed) throw new ApiError(400, { message: `Email already exists: ${email}` });
