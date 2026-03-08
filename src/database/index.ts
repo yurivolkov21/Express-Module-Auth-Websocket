@@ -24,11 +24,11 @@ export async function ensureIndexes(): Promise<void> {
             { name: "refresh_tokens_user_active" }
         );
 
-    // Chat message: index for createdAt to optimize timeline queries
+    // Placeholder for future chat functionality: compound index to support per-chat timeline queries
     await db
         .collection("chat_messages")
         .createIndex(
-            { createdAt: -1 },
-            { name: "chat_timeline" }
+            { chatId: 1, createdAt: -1 },
+            { name: "chat_messages_timeline" }
         );
 }
