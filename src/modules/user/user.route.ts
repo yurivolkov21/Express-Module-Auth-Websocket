@@ -2,7 +2,7 @@ import { Router } from "express";
 import { UserDatabase } from "./user.database.js";
 import { UserService } from "./user.service.js";
 import { UserController } from "./user.controller.js";
-import { requireAuth, requireRole } from "../../middlewares/auth.middleware.js";
+import { requireAuth, requireRole } from "../../middleware/auth.middleware.js";
 
 const router = Router();
 

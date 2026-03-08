@@ -1,13 +1,13 @@
 import { createApp } from "./app.js";
 import { env } from "./config/env.js";
-import { ensureIndexes } from "./database/index.js";
+import { ensureIndex } from "./database/index.js";
 import { connectMongo } from "./database/mongo.js";
 import http from "node:http";
 import { attachWsServer } from "./realtime/ws.js";
 
 async function bootstrap() {
     await connectMongo();
-    await ensureIndexes();
+    await ensureIndex();
 
     const app = createApp();
 

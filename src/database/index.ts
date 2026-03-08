@@ -1,6 +1,6 @@
 import { getDb } from "./mongo.js";
 
-export async function ensureIndexes(): Promise<void> {
+export async function ensureIndex(): Promise<void> {
     const db = getDb();
 
     // User: unique index on email for authentication and lookup
