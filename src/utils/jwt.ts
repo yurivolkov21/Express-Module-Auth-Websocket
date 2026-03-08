@@ -2,14 +2,14 @@ import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
 
 export type AccessTokenPayload = {
-    sub: string,
-    role: "customer" | "admin",
-}
+    sub: string;
+    role: "customer" | "admin";
+};
 
 export type RefreshTokenPayload = {
-    sub: string, // User ID
-    jti: string, // Tolen ID (for blacklisting)
-}
+    sub: string;
+    jti: string;
+};
 
 export function signAccessToken(payload: AccessTokenPayload): string {
     return jwt.sign(payload, env.jwtAccessSecret, {

@@ -1,100 +1,158 @@
-import { hash } from "node:crypto";
+import { hashPassword } from "../../utils/crypto.js";
 import { ApiError } from "../../utils/http.js";
 import type { UserDatabase, UserEntity } from "./user.database.js";
-import type { UserDoc, UserRole } from "./user.model.js";
-import { hashPassword } from "../../utils/crypto.js";
+import type { UserRole } from "./user.model.js";
 
 export class UserService {
     constructor(private readonly userDb: UserDatabase) { }
 
-    async list() {
-        return await this.userDb.list();
+    private normalizeEmail(raw: string): string {
+        return raw.trim().toLowerCase();
     }
 
-    async register(input: { email: string; password: string; role?: UserRole }): Promise<UserEntity> {
-        const email = input.email.trim().toLocaleLowerCase();
-        if (!email.includes('@')) throw new ApiError(400, { message: `Invalid email address: ${email}` });
+    private assertEmailValid(email: string): void {
+        if (!email.includes("@"))
+            throw new ApiError(400, { message: "Invalid Email." });
+    }
 
-        const password = input.password;
-        if (password.length < 6) throw new ApiError(400, { message: "Password must be at least 6 characters long" });
-        if (!/[A-Z]/.test(password)) throw new ApiError(400, { message: "Password must contain at least 1 uppercase letter" });
-        if (!/[^a-zA-Z0-9]/.test(password)) throw new ApiError(400, { message: "Password must contain at least 1 special character" });
-
+    private async assertEmailUnique(
+        email: string,
+        currentEmail?: string
+    ): Promise<void> {
+        if (currentEmail && email === currentEmail) return;
         const existed = await this.userDb.findByEmail(email);
-        if (existed) throw new ApiError(400, { message: "Email already exists" });
+        if (existed) throw new ApiError(409, { message: "Email already exists." });
+    }
+
+    private assertPasswordValid(pw: string): void {
+        if (pw.length < 6)
+            throw new ApiError(400, {
+                message: "Password must be at least 6 characters.",
+            });
+
+        if (!/[A-Z]/.test(pw))
+            throw new ApiError(400, {
+                message: "Password must contain an uppercase letter.",
+            });
+
+        if (!/[^\w\s]/.test(pw))
+            throw new ApiError(400, {
+                message: "Password must contain a special character.",
+            });
+    }
+
+    private async requireUserById(userId: string): Promise<UserEntity> {
+        const u = await this.userDb.findById(userId);
+        if (!u) throw new ApiError(404, { message: "User ID not found" });
+
+        return u;
+    }
+
+    async list() {
+        return this.userDb.list();
+    }
+
+    async getById(userId: string): Promise<UserEntity> {
+        const u = await this.userDb.findById(userId);
+        if (!u) throw new ApiError(404, { message: "User ID not found" });
+        return u;
+    }
+
+    async getByEmail(userEmail: string): Promise<UserEntity> {
+        const u = await this.userDb.findByEmail(this.normalizeEmail(userEmail));
+        if (!u) throw new ApiError(404, { message: "User Email not found" });
+        return u;
+    }
+
+    async register(input: {
+        email: string;
+        password: string;
+        role?: UserRole;
+    }): Promise<UserEntity> {
+        const email = this.normalizeEmail(input.email);
+        this.assertEmailValid(email);
+        await this.assertEmailUnique(email);
+
+        this.assertPasswordValid(input.password);
 
         const now = new Date();
-        const hashedPassword = await hashPassword(password);
-        const role: UserRole = input.role || "customer";
+        const passwordHash = await hashPassword(input.password);
+        const role: UserRole = input.role ?? "customer";
 
         return this.userDb.create({
             email,
-            passwordHash: hashedPassword,
+            passwordHash,
             role,
             createdAt: now,
-            updatedAt: now
+            updatedAt: now,
         });
     }
 
-    async bulkRegister(inputs: Array<{ email: string; password: string; role?: UserRole }>): Promise<UserEntity[]> {
-        const now = new Date();
-        const docs: UserDoc[] = [];
-
-        for (const input of inputs) {
-            const email = input.email.trim().toLocaleLowerCase();
-
-            if (!email.includes('@')) throw new ApiError(400, { message: `Invalid email address: ${email}` });
-            if (input.password.length < 6) throw new ApiError(400, { message: `Password must be at least 6 characters long` });
-            if (!/[A-Z]/.test(input.password)) throw new ApiError(400, { message: `Password must contain at least 1 uppercase letter` });
-            if (!/[^a-zA-Z0-9]/.test(input.password)) throw new ApiError(400, { message: `Password must contain at least 1 special character` });
-
-            const existed = await this.userDb.findByEmail(email);
-            if (existed) throw new ApiError(400, { message: `Email already exists: ${email}` });
-
-            const passwordHash = await hashPassword(input.password);
-
-            docs.push({
-                email,
-                passwordHash,
-                role: input.role ?? "customer",
-                createdAt: now,
-                updatedAt: now
-            });
-        }
-
-        return this.userDb.createMany(docs);
-    }
-
-    async updateUser(
-        id: string,
-        input: { email?: string, role?: UserRole }
+    async updatePut(
+        userId: string,
+        input: { email: string; password: string; role: UserRole }
     ): Promise<UserEntity> {
-        const existed = await this.userDb.findById(id);
-        if (!existed) throw new ApiError(404, { message: "User not found" });
+        const current = await this.requireUserById(userId);
 
-        const update: Partial<Pick<UserDoc, "email" | "role">> = {};
+        const email = this.normalizeEmail(input.email);
+        this.assertEmailValid(email);
+        await this.assertEmailUnique(email, current.email);
 
-        if (input.email) {
-            const email = input.email.trim().toLocaleLowerCase();
-            if (!email.includes('@')) throw new ApiError(400, { message: `Invalid email address: ${email}` });
-            update.email = email;
-        }
+        this.assertPasswordValid(input.password);
 
-        if (input.role) {
-            update.role = input.role;
-        }
+        const now = new Date();
+        const passwordHash = await hashPassword(input.password);
 
-        const updated = await this.userDb.updateById(id, update);
-        if (!updated) throw new ApiError(500, { message: "Failed to update user" });
-
+        const updated = await this.userDb.updateById(userId, {
+            email,
+            passwordHash,
+            role: input.role,
+            updatedAt: now,
+        });
+        if (!updated) throw new ApiError(404, { message: "User ID not found" });
         return updated;
     }
 
-    async deleteUser(id: string): Promise<void> {
-        const existed = await this.userDb.findById(id);
-        if (!existed) throw new ApiError(404, { message: "User not found" });
+    async updatePatch(
+        userId: string,
+        input: { email?: string; password?: string; role?: UserRole }
+    ): Promise<UserEntity> {
+        const current = await this.requireUserById(userId);
 
-        const deleted = await this.userDb.deleteById(id);
-        if (!deleted) throw new ApiError(500, { message: "Delete failed" });
+        const set: Partial<
+            Pick<UserEntity, "email" | "passwordHash" | "role" | "updatedAt">
+        > = {};
+        const now = new Date();
+
+        if (input.email !== undefined) {
+            const email = this.normalizeEmail(input.email);
+            this.assertEmailValid(email);
+            await this.assertEmailUnique(email, current.email);
+            set.email = email;
+        }
+
+        if (input.password !== undefined) {
+            this.assertPasswordValid(input.password);
+            set.passwordHash = await hashPassword(input.password);
+        }
+
+        if (input.role !== undefined) {
+            set.role = input.role;
+        }
+
+        if (Object.keys(set).length === 0) {
+            throw new ApiError(400, { message: "No fields to update." });
+        }
+
+        set.updatedAt = now;
+
+        const updated = await this.userDb.updateById(userId, set);
+        if (!updated) throw new ApiError(404, { message: "User ID not found" });
+        return updated;
+    }
+
+    async delete(userId: string): Promise<void> {
+        const ok = await this.userDb.deleteById(userId);
+        if (!ok) throw new ApiError(404, { message: "User ID not found" });
     }
 }

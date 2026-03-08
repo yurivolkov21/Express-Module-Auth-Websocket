@@ -15,23 +15,24 @@ export class AuthDatabase {
     }
 
     async findActiveByTokenId(
-        tokenId: string,
+        tokenId: string
     ): Promise<RefreshTokenEntity | null> {
         return this.col().findOne({
             tokenId,
-            revokeAt: { $exists: false },
+            revokedAt: { $exists: false },
             expiresAt: { $gt: new Date() },
-        });
+        }) as Promise<RefreshTokenEntity | null>;
     }
+
     async revoke(tokenId: string, replacedByTokenId?: string): Promise<void> {
         await this.col().updateOne(
             { tokenId },
             {
                 $set: {
-                    revokeAt: new Date(),
+                    revokedAt: new Date(),
                     ...(replacedByTokenId ? { replacedByTokenId } : {}),
                 },
-            },
+            }
         );
     }
 }

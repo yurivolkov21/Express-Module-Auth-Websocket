@@ -3,10 +3,10 @@ import type { ObjectId } from "mongodb";
 export type RefreshTokenDoc = {
     userId: ObjectId;
     tokenId: string;
-    issueAt: Date;
+    issuedAt: Date;
     expiresAt: Date;
-    revokeAt?: Date;
+    revokedAt?: Date;
     replacedByTokenId?: string;
     userAgent?: string;
     ip?: string;
-}
+};

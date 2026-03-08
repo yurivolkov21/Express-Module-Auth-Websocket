@@ -2,7 +2,7 @@ export type ApiErrorPayload = {
     message: string;
     code?: string;
     details?: unknown;
-}
+};
 
 export class ApiError extends Error {
     public status: number;

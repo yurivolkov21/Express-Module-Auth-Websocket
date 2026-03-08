@@ -9,8 +9,8 @@ export class UserDatabase {
         return getDb().collection<UserDoc>("users");
     }
 
-    async list(): Promise<Array<UserEntity>> {
-        return await this.col().find({}).limit(50).toArray();
+    async list(): Promise<UserEntity[]> {
+        return this.col().find({}).limit(50).toArray() as Promise<UserEntity[]>;
     }
 
     async findByEmail(email: string): Promise<UserEntity | null> {
@@ -18,33 +18,40 @@ export class UserDatabase {
     }
 
     async findById(id: string): Promise<UserEntity | null> {
-        return this.col().findOne({ _id: new ObjectId(id) }) as Promise<UserEntity | null>;
+        return this.col().findOne({
+            _id: new ObjectId(id),
+        }) as Promise<UserEntity | null>;
     }
 
     async create(doc: UserDoc): Promise<UserEntity> {
-        const result = await this.col().insertOne(doc);
-        return { ...doc, _id: result.insertedId };
+        const res = await this.col().insertOne(doc);
+        return { ...doc, _id: res.insertedId };
     }
 
     async createMany(docs: UserDoc[]): Promise<UserEntity[]> {
-        const result = await this.col().insertMany(docs);
-        return docs.map((doc, i) => ({ ...doc, _id: result.insertedIds[i]! }));
+        const res = await this.col().insertMany(docs);
+        return docs.map((doc, index) => {
+            const id = res.insertedIds[index];
+            if (!id) {
+                throw new Error(`insertMany: missing insertedId at index ${index}`);
+            }
+            return { ...doc, _id: id };
+        });
     }
 
     async updateById(
         id: string,
-        update: Partial<Pick<UserDoc, "email" | "role">>
+        set: Partial<UserDoc>
     ): Promise<UserEntity | null> {
-        const result = await this.col().findOneAndUpdate(
+        return this.col().findOneAndUpdate(
             { _id: new ObjectId(id) },
-            { $set: { ...update, updatedAt: new Date() } },
+            { $set: set },
             { returnDocument: "after" }
-        );
-        return result as UserEntity | null;
+        ) as Promise<UserEntity | null>;
     }
 
     async deleteById(id: string): Promise<boolean> {
-        const result = await this.col().deleteOne({ _id: new ObjectId(id) });
-        return result.deletedCount === 1;
+        const res = await this.col().deleteOne({ _id: new ObjectId(id) });
+        return res.deletedCount === 1;
     }
 }

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { UserDatabase } from "./user.database.js";
 import { UserService } from "./user.service.js";
 import { UserController } from "./user.controller.js";
+import { requireAuth, requireRole } from "../../middlewares/auth.middleware.js";
 
 const router = Router();
 
@@ -9,13 +10,15 @@ const db = new UserDatabase();
 const service = new UserService(db);
 const controller = new UserController(service);
 
-router.get('/', controller.list);
-router.post('/register', controller.register);
-router.post('/bulk-register', controller.bulkRegister);
+router.get("/", controller.list);
+router.post("/register", controller.register);
 
-router.patch('/:id', controller.update);
+router.get("/:id", requireAuth, controller.getById);
+router.get("/by-email/:email", requireAuth, controller.getByEmail);
 
-router.delete('/:id', controller.remove);
+router.put("/:id", requireAuth, controller.updatePut);
+router.patch("/:id", requireAuth, controller.updatePatch);
 
-export const userRoutes = router;
+router.delete("/:id", requireAuth, requireRole("admin"), controller.delete);
 
+export const userRouters = router;
