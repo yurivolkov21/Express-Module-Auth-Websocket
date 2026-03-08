@@ -1,4 +1,4 @@
-import { WebSocket, WebSocketServer } from "ws";
+import WebSocket, { WebSocketServer } from "ws";
 import type http from "node:http";
 import { UserDatabase } from "../modules/user/user.database.js";
 import ChatService from "../modules/chat/chat.service.js";

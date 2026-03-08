@@ -1,6 +1,6 @@
 import { createApp } from "./app.js";
 import { env } from "./config/env.js";
-import { ensureIndexes } from "./database/indexes.js";
+import { ensureIndexes } from "./database/index.js";
 import { connectMongo } from "./database/mongo.js";
 import http from "node:http";
 import { attachWsServer } from "./realtime/ws.js";

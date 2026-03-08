@@ -1,9 +1,9 @@
 import cookieParser from "cookie-parser";
 import express from "express";
 
-import { errorMiddleware } from "./middlewares/error.middleware.js";
-import { userRouters } from "./modules/user/user.routes.js";
-import { authRoutes } from "./modules/auth/auth.routes.js";
+import { errorMiddleware } from "./middleware/error.middleware.js";
+import { userRouters } from "./modules/user/user.route.js";
+import { authRoutes } from "./modules/auth/auth.route.js";
 import { chatRoutes } from "./modules/chat/chat.routes.js";
 
 export function createApp() {
