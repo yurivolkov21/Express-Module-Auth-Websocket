@@ -15,7 +15,6 @@ export async function connectMongo(): Promise<Db> {
 
 export function getDb(): Db {
     if (!db) throw new Error("MongoDB is not connected. Please call connectMongo() first.");
-
     return db;
 }
 
@@ -25,7 +24,6 @@ export async function disconnectMongo(): Promise<void> {
         client = null;
         db = null;
     }
-
     return;
 }
 
