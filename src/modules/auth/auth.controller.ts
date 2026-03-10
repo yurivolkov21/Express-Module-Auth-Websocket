@@ -1,7 +1,7 @@
 import type { Response } from "express";
 import type { AuthService } from "./auth.service.js";
 import { env } from "../../config/env.js";
-import { ok } from "../../utils/http.js";
+import { ApiError, ok } from "../../utils/http.js";
 import type { ActionController } from "../../types/express.js";
 
 function setRefreshCookie(res: Response, token: string) {
@@ -43,12 +43,7 @@ export class AuthController {
 
     refresh: ActionController = async (req, res) => {
         const rt = req.cookies?.[env.refreshCookieName];
-        if (!rt) {
-            res
-                .status(401)
-                .json({ error: { message: "Missing refresh token cookie" } });
-            return;
-        }
+        if (!rt) throw new ApiError(401, { message: "Missing refresh token cookie" });
 
         const { accessToken, refreshToken } = await this.authService.refresh(rt);
         setRefreshCookie(res, refreshToken);

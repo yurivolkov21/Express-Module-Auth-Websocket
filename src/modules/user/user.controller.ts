@@ -17,7 +17,7 @@ export class UserController {
 
   list: ActionController = async (_req, res) => {
     const users = await this.userService.list();
-    res.json({ data: users.map(this.toUserDto) });
+    res.json(ok(users.map(this.toUserDto)));
   };
 
   register: ActionController = async (req, res) => {
@@ -27,21 +27,21 @@ export class UserController {
   };
 
   getById: ActionController = async (req, res) => {
-    const userId = req.params.id;
-    const user = await this.userService.getById(userId!);
+    const userId = req.params.id as string;
+    const user = await this.userService.getById(userId);
     res.json(ok(this.toUserDto(user)));
   };
 
   getByEmail: ActionController = async (req, res) => {
-    const userEmail = req.params.email;
-    const user = await this.userService.getByEmail(userEmail!);
+    const userEmail = req.params.email as string;
+    const user = await this.userService.getByEmail(userEmail);
     res.json(ok(this.toUserDto(user)));
   };
 
   updatePut: ActionController = async (req, res) => {
-    const userId = req.params.id;
+    const userId = req.params.id as string;
     const { email, password, role } = req.body;
-    const user = await this.userService.updatePut(userId!, {
+    const user = await this.userService.updatePut(userId, {
       email,
       password,
       role,
@@ -50,14 +50,14 @@ export class UserController {
   };
 
   updatePatch: ActionController = async (req, res) => {
-    const userId = req.params.id;
+    const userId = req.params.id as string;
 
     if (req.auth?.userId !== userId) {
       throw new ApiError(403, { message: "You are not allowed to editing." });
     }
 
     const { email, password, role } = req.body;
-    const user = await this.userService.updatePatch(userId!, {
+    const user = await this.userService.updatePatch(userId, {
       email,
       password,
       role,
@@ -67,8 +67,8 @@ export class UserController {
   };
 
   delete: ActionController = async (req, res) => {
-    const userId = req.params.id;
-    await this.userService.delete(userId!);
+    const userId = req.params.id as string;
+    await this.userService.delete(userId);
     res.status(204).send();
   };
 }

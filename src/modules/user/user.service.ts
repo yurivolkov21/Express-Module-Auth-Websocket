@@ -53,9 +53,7 @@ export class UserService {
     }
 
     async getById(userId: string): Promise<UserEntity> {
-        const u = await this.userDb.findById(userId);
-        if (!u) throw new ApiError(404, { message: "User ID not found" });
-        return u;
+        return this.requireUserById(userId);
     }
 
     async getByEmail(userEmail: string): Promise<UserEntity> {

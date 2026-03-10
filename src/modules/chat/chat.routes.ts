@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { ChatDatabase } from "./chat.database.js";
-import ChatService from "./chat.service.js";
+import { ChatService } from "./chat.service.js";
 import { ChatController } from "./chat.controller.js";
 
 const router = Router();
